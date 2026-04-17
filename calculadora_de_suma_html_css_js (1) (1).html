@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculadora Pro</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+
+  <style>
+    * { box-sizing: border-box; font-family: Arial, sans-serif; }
+
+    body {
+      height: 100vh;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: radial-gradient(circle at top, #667eea, #764ba2);
+      overflow: hidden;
+    }
+
+    .container {
+      background: rgba(255,255,255,0.2);
+      backdrop-filter: blur(10px);
+      padding: 25px;
+      border-radius: 20px;
+      text-align: center;
+      width: 320px;
+      color: white;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+
+    .pantalla {
+      background: rgba(0,0,0,0.3);
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      text-align: right;
+      min-height: 40px;
+      font-size: 18px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4,1fr);
+      gap: 8px;
+    }
+
+    button {
+      padding: 15px;
+      border: none;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.3);
+      color: white;
+      cursor: pointer;
+      font-size: 16px;
+      transition: 0.1s;
+    }
+
+    button:active { transform: scale(0.9); }
+
+    .operador { background: linear-gradient(135deg, #00c6ff, #0072ff); }
+    .igual { background: linear-gradient(135deg, #00ff95, #00c853); grid-column: span 2; }
+    .limpiar { background: linear-gradient(135deg, #ff6a6a, #ff3d3d); grid-column: span 2; }
+
+    .resultado { margin-top: 10px; font-size: 20px; font-weight: bold; }
+
+    .figura {
+      position: absolute;
+      font-size: 35px;
+      transition: all 10s linear;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h3>🧮 Calculadora</h3>
+
+  <div class="pantalla" id="pantalla"></div>
+
+  <div class="grid">
+    <button onclick="agregar('7')">7</button>
+    <button onclick="agregar('8')">8</button>
+    <button onclick="agregar('9')">9</button>
+    <button class="operador" onclick="agregar('/')">➗</button>
+
+    <button onclick="agregar('4')">4</button>
+    <button onclick="agregar('5')">5</button>
+    <button onclick="agregar('6')">6</button>
+    <button class="operador" onclick="agregar('*')">✖</button>
+
+    <button onclick="agregar('1')">1</button>
+    <button onclick="agregar('2')">2</button>
+    <button onclick="agregar('3')">3</button>
+    <button class="operador" onclick="agregar('-')">➖</button>
+
+    <button onclick="agregar('0')">0</button>
+    <button onclick="agregar('.')">.</button>
+    <button onclick="borrar()">⌫</button>
+    <button class="operador" onclick="agregar('+')">➕</button>
+
+    <button class="limpiar" onclick="limpiarTodo()">C</button>
+    <button class="igual" onclick="calcular()">=</button>
+  </div>
+
+  <div class="resultado" id="resultado"></div>
+</div>
+
+<script>
+let pantalla = document.getElementById("pantalla");
+let resultadoDiv = document.getElementById("resultado");
+let figurasActivas = [];
+
+function agregar(v){ pantalla.innerText += v; }
+function borrar(){ pantalla.innerText = pantalla.innerText.slice(0,-1); }
+
+function limpiarFiguras(){ figurasActivas.forEach(f => f.remove()); figurasActivas = []; }
+
+function lanzarFiguras(icono){
+  limpiarFiguras();
+  for(let i=0;i<15;i++){
+    let f=document.createElement("div");
+    f.className="figura";
+    f.innerText=icono;
+
+    f.style.left=Math.random()*window.innerWidth+"px";
+    f.style.top=Math.random()*window.innerHeight+"px";
+
+    document.body.appendChild(f);
+    figurasActivas.push(f);
+
+    setTimeout(()=>{
+      f.style.transform="translate("+(Math.random()*800-400)+"px,"+(Math.random()*800-400)+"px) scale(2)";
+      f.style.opacity="0";
+    },50);
+
+    setTimeout(()=>f.remove(),10000);
+  }
+}
+
+function limpiarTodo(){ pantalla.innerText=""; resultadoDiv.innerText=""; limpiarFiguras(); }
+
+function calcular(){
+  try{
+    let exp = pantalla.innerText;
+    if(exp.trim()==="") return;
+
+    let r = eval(exp);
+
+    let icono="🎉";
+    if(exp.includes("-")) icono="☁️";
+    if(exp.includes("*")) icono="🏀";
+    if(exp.includes("/")) icono="⚽";
+
+    resultadoDiv.innerText = icono + " " + r;
+    lanzarFiguras(icono);
+
+  }catch{
+    resultadoDiv.innerText="Error";
+    limpiarFiguras();
+  }
+}
+
+// SERVICE WORKER
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js');
+}
+</script>
+
+</body>
+</html>
